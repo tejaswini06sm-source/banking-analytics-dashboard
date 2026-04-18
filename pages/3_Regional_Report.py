@@ -38,7 +38,8 @@ df = load_data()
 
 st.sidebar.title("🔎 Filters")
 selected_type = st.sidebar.multiselect("Transaction Type", df['transaction_type'].unique(), default=list(df['transaction_type'].unique()))
-df = df[df['transaction_type'].isin(selected_type)]
+selected_bank = st.sidebar.multiselect("Bank", df['bank'].unique(), default=list(df['bank'].unique()))
+df = df[df['transaction_type'].isin(selected_type) & df['bank'].isin(selected_bank)]
 
 regional = df.groupby('region').agg(
     total_transactions=('transaction_id','count'),
@@ -94,7 +95,8 @@ with col2:
 col1, col2 = st.columns(2)
 with col1:
     bank_region = df.groupby(['region','bank'])['amount'].sum().reset_index()
-    fig = px.bar(bank_region, x='region', y='amount', color='bank', title='🏦 Bank Distribution by Region', barmode='stack')
+    fig = px.bar(bank_region, x='region', y='amount', color='bank',
+                 title='🏦 Bank Distribution by Region', barmode='stack')
     st.plotly_chart(fig, use_container_width=True)
 with col2:
     fig = px.bar(regional, x='region', y='failed_rate', color='Performance Tier',
@@ -104,4 +106,4 @@ with col2:
 
 st.markdown("---")
 st.subheader("📋 Regional Summary Table")
-st.dataframe(regional.drop('cluster', axis=1).style.background_gradient(subset=['total_volume','completion_rate'], cmap='RdYlGn'), use_container_width=True)
+st.dataframe(regional.drop('cluster', axis=1), use_container_width=True)
